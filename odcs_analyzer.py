@@ -197,7 +197,7 @@ st.markdown(
 
 CACHE_FILE_NAME = ".odcs_cache_v12_models.pkl"
 DEFAULT_GDRIVE_FOLDER_ID = "18z6yjQTeQWIdcCUCYID8mTqGgAbIa2Yr"
-ROOT_SUBFOLDER_NAME = "Stiction Peak Test"
+ROOT_SUBFOLDER_NAME = "Stickness Peak Test"
 PRIORITY_MODEL_NAME = "M040-000013-P2BKKI"
 CONTROL_LIMIT = 2.0
 SPEC_LIMIT = 32.8
@@ -250,7 +250,7 @@ I18N = {
         "base_self": "単体データ外挿（基準カーブなし）",
         "custom_ref_sel": "基準にするLot (Pre-HT)",
         "pre_ht_eval_sel": "Pre-HTのピークも算出する条件",
-        "info_no_data": "Googleドライブの「Stiction Peak Test」配下の各品番フォルダに測定ファイル（.xls / .xlsx / .zip）を入れるか、左サイドバーからファイルをアップロードしてください。",
+        "info_no_data": "Googleドライブの「Stickness Peak Test」配下の各品番フォルダに測定ファイル（.xls / .xlsx / .zip）を入れるか、左サイドバーからファイルをアップロードしてください。",
         "metric_total": "判定総数",
         "metric_ok": "OK (≦ 2.0 mN・m)",
         "metric_warn": "工程管理外 (2.0〜32.8)",
@@ -337,7 +337,7 @@ I18N = {
         "base_self": "Self Extrapolation (No Reference Curve)",
         "custom_ref_sel": "Reference Lot (Pre-HT)",
         "pre_ht_eval_sel": "Also Evaluate Pre-HT Peaks for",
-        "info_no_data": "Place measurement files (.xls / .xlsx / .zip) into each Part No. folder under 'Stiction Peak Test' on Google Drive, or upload files from the left sidebar.",
+        "info_no_data": "Place measurement files (.xls / .xlsx / .zip) into each Part No. folder under 'Stickness Peak Test' on Google Drive, or upload files from the left sidebar.",
         "metric_total": "Total Evaluated",
         "metric_ok": "OK (≦ 2.0 mN·m)",
         "metric_warn": "Control Limit (2.0–32.8)",
@@ -424,7 +424,7 @@ I18N = {
         "base_self": "คำนวณจากกราฟตัวเอง (ไม่มีเส้นอ้างอิง)",
         "custom_ref_sel": "เลือก Lot อ้างอิง (Pre-HT)",
         "pre_ht_eval_sel": "คำนวณค่าพีคของ Pre-HT ด้วยสำหรับเงื่อนไข",
-        "info_no_data": "กรุณานำไฟล์ผลการวัด (.xls / .xlsx / .zip) ใส่ในโฟลเดอร์รุ่นสินค้าภายใต้ 'Stiction Peak Test' บน Google Drive หรืออัปโหลดทางแถบซ้าย",
+        "info_no_data": "กรุณานำไฟล์ผลการวัด (.xls / .xlsx / .zip) ใส่ในโฟลเดอร์รุ่นสินค้าภายใต้ 'Stickness Peak Test' บน Google Drive หรืออัปโหลดทางแถบซ้าย",
         "metric_total": "จำนวนทั้งหมด",
         "metric_ok": "OK (≦ 2.0 mN·m)",
         "metric_warn": "เกินเกณฑ์ควบคุม (2.0–32.8)",
@@ -499,7 +499,7 @@ def format_judge_label(judge_code: str) -> str:
 # ==========================================
 def resolve_model_from_rel_path(rel_path: str) -> str:
     """
-    Stiction Peak Test 配下の相対パスから直下フォルダ名（品番）を抽出する。
+    Stickness Peak Test 配下の相対パスから直下フォルダ名（品番）を抽出する。
     """
     norm = rel_path.replace("\\", "/").strip("/")
     parts = [p for p in norm.split("/") if p]
@@ -633,7 +633,7 @@ def register_item_by_model(models_data: dict, meta: dict):
 @st.cache_data(show_spinner="Downloading data from Google Drive...")
 def load_raw_dataset_from_gdrive_public(folder_id_or_url: str, refresh_token: int):
     """
-    Stiction Peak Analyzer (root) -> Stiction Peak Test -> [品番フォルダ一覧]
+    Stiction Peak Analyzer (root) -> Stickness Peak Test -> [品番フォルダ一覧]
     配下の全ファイル・サブフォルダ・ZIPを品番ごとに自動分類して読み込む
     """
     if not HAS_GDOWN:
@@ -655,10 +655,9 @@ def load_raw_dataset_from_gdrive_public(folder_id_or_url: str, refresh_token: in
             output=base_tmp_dir,
             quiet=True,
             use_cookies=False,
-            remaining_ok=True,
         )
 
-        # Stiction Peak Test フォルダを探す（無ければ base_tmp_dir 直下を対象にする）
+        # Stickness Peak Test フォルダを探す（無ければ base_tmp_dir 直下を対象にする）
         scan_root = base_tmp_dir
         for root, dirs, _ in os.walk(base_tmp_dir):
             if ROOT_SUBFOLDER_NAME in dirs:
