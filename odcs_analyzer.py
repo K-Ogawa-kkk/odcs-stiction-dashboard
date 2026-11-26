@@ -165,6 +165,10 @@ st.markdown(
         color: #16a34a;
         font-weight: 700;
     }
+    .odcs-badge-warn {
+        color: #d97706;
+        font-weight: 700;
+    }
     .odcs-badge-ng {
         color: #dc2626;
         font-weight: 700;
@@ -191,8 +195,12 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-CACHE_FILE_NAME = ".odcs_cache_v11_local.pkl"
+CACHE_FILE_NAME = ".odcs_cache_v12_models.pkl"
 DEFAULT_GDRIVE_FOLDER_ID = "18z6yjQTeQWIdcCUCYID8mTqGgAbIa2Yr"
+ROOT_SUBFOLDER_NAME = "Stiction Peak Test"
+PRIORITY_MODEL_NAME = "M040-000013-P2BKKI"
+CONTROL_LIMIT = 2.0
+SPEC_LIMIT = 32.8
 
 # ==========================================
 # 多言語辞書（日本語 / 英語 / タイ語）
@@ -208,6 +216,7 @@ I18N = {
         "app_title": "📊 ODCS 粘着自動判定ダッシュボード",
         "lang_label": "🌐 言語 (Language)",
         "btn_refresh": "🔄 データ更新（ドライブ再スキャン）",
+        "model_select_label": "📦 品番選択 (Part No.)",
         "sidebar_filter_header": "🔍 絞り込みフィルター",
         "f_lot": "① β+Lot / 条件（初期直近3・最大5）",
         "f_trial": "② 測定回数（-1, -2, -3...）",
@@ -220,7 +229,7 @@ I18N = {
         "more_selected": "{first} ほか {rest}件選択中",
         "search_placeholder": "🔍 検索...",
         "sidebar_display_header": "🎨 一括表示・スケール設定",
-        "only_ng": "NGを含む行のみ絞り込み",
+        "only_ng": "NG / 工程管理外のみ絞り込み",
         "show_base": "全グラフに基準フィット線（点線）を表示",
         "auto_scale": "最大スケールに自動統一",
         "y_scale_cap": "Y軸上限 [mN・m]（スライダー / 数値入力）",
@@ -230,7 +239,7 @@ I18N = {
         "src_gdrive": "☁️ Googleドライブ自動読込（リンク共有）",
         "src_folder": "📁 ローカルフォルダ自動読込",
         "src_upload": "📤 ファイル / ZIP アップロード",
-        "gdrive_folder_id": "Googleドライブ フォルダID / URL",
+        "gdrive_folder_id": "Googleドライブ ルートフォルダID / URL",
         "gdrive_err": "Googleドライブ読込エラー（フォルダが「リンクを知っている全員」に共有されているか確認してください）: {err}",
         "folder_path": "対象フォルダパス",
         "folder_not_found": "フォルダが見つかりません",
@@ -241,10 +250,14 @@ I18N = {
         "base_self": "単体データ外挿（基準カーブなし）",
         "custom_ref_sel": "基準にするLot (Pre-HT)",
         "pre_ht_eval_sel": "Pre-HTのピークも算出する条件",
-        "info_no_data": "Googleドライブの対象フォルダ（リンクを知っている全員に共有）に測定ファイル（.xls / .xlsx / .zip）を入れるか、左サイドバーからファイルをアップロードしてください。",
+        "info_no_data": "Googleドライブの「Stiction Peak Test」配下の各品番フォルダに測定ファイル（.xls / .xlsx / .zip）を入れるか、左サイドバーからファイルをアップロードしてください。",
         "metric_total": "判定総数",
         "metric_ok": "OK (≦ 2.0 mN・m)",
-        "metric_ng": "NG (> 2.0 mN・m / 異常)",
+        "metric_warn": "工程管理外 (2.0〜32.8)",
+        "metric_ng": "NG (> 32.8 / 異常)",
+        "judge_disp_ok": "OK",
+        "judge_disp_warn": "工程管理外",
+        "judge_disp_ng": "NG",
         "unit_items": "{n} 件",
         "btn_csv": "📥 判定結果一覧をCSVダウンロード",
         "sec_summary": "📋 判定結果一覧",
@@ -262,11 +275,14 @@ I18N = {
         "ov_judge": "判定絞り込み",
         "judge_all": "すべて",
         "judge_ok": "OKのみ",
+        "judge_warn": "管理外のみ",
         "judge_ng": "NGのみ",
+        "judge_ng_warn": "NG・管理外",
         "tab_cards": "📈 個別波形グラフ一覧（HDD No. 揃え）",
         "tab_table": "📑 全データ詳細テーブル",
         "hdr_max": "最大",
         "hdr_ng": "NG",
+        "hdr_warn": "管理外",
         "hdr_base": "基準:",
         "lot_ref_auto": "自動 ({auto_lbl})",
         "lot_ref_self": "単体外挿（基準なし）",
@@ -287,6 +303,7 @@ I18N = {
         "app_title": "📊 ODCS Automated Stiction Analysis Dashboard",
         "lang_label": "🌐 Language",
         "btn_refresh": "🔄 Refresh Data (Rescan Drive)",
+        "model_select_label": "📦 Part No. (Model)",
         "sidebar_filter_header": "🔍 Filters",
         "f_lot": "① β+Lot / Condition (Default Latest 3, Max 5)",
         "f_trial": "② Trial No. (-1, -2, -3...)",
@@ -299,7 +316,7 @@ I18N = {
         "more_selected": "{first} +{rest} more",
         "search_placeholder": "🔍 Search...",
         "sidebar_display_header": "🎨 Display & Scale Settings",
-        "only_ng": "Show only rows containing NG",
+        "only_ng": "Show only NG / Out-of-Control rows",
         "show_base": "Show baseline fit curve (dotted) on all charts",
         "auto_scale": "Auto-unify to maximum scale",
         "y_scale_cap": "Y-Axis Max [mN·m] (Slider / Input)",
@@ -309,7 +326,7 @@ I18N = {
         "src_gdrive": "☁️ Auto-load from Google Drive (Shared Link)",
         "src_folder": "📁 Auto-load from Local Folder",
         "src_upload": "📤 Upload Files / ZIP",
-        "gdrive_folder_id": "Google Drive Folder ID / URL",
+        "gdrive_folder_id": "Google Drive Root Folder ID / URL",
         "gdrive_err": "Google Drive Error (Please verify the folder is shared with 'Anyone with the link'): {err}",
         "folder_path": "Target Folder Path",
         "folder_not_found": "Folder not found",
@@ -320,10 +337,14 @@ I18N = {
         "base_self": "Self Extrapolation (No Reference Curve)",
         "custom_ref_sel": "Reference Lot (Pre-HT)",
         "pre_ht_eval_sel": "Also Evaluate Pre-HT Peaks for",
-        "info_no_data": "Place measurement files (.xls / .xlsx / .zip) into the shared Google Drive folder ('Anyone with the link'), or upload files from the left sidebar.",
+        "info_no_data": "Place measurement files (.xls / .xlsx / .zip) into each Part No. folder under 'Stiction Peak Test' on Google Drive, or upload files from the left sidebar.",
         "metric_total": "Total Evaluated",
         "metric_ok": "OK (≦ 2.0 mN·m)",
-        "metric_ng": "NG (> 2.0 mN·m / Error)",
+        "metric_warn": "Control Limit (2.0–32.8)",
+        "metric_ng": "NG (> 32.8 / Error)",
+        "judge_disp_ok": "OK",
+        "judge_disp_warn": "Out of Control",
+        "judge_disp_ng": "NG",
         "unit_items": "{n}",
         "btn_csv": "📥 Download Results as CSV",
         "sec_summary": "📋 Judgement Summary List",
@@ -340,12 +361,15 @@ I18N = {
         "ov_tr": "Trial No.",
         "ov_judge": "Judgement Filter",
         "judge_all": "All",
-        "judge_ok": "OK Only",
-        "judge_ng": "NG Only",
+        "judge_ok": "OK",
+        "judge_warn": "Control",
+        "judge_ng": "NG",
+        "judge_ng_warn": "NG+Ctrl",
         "tab_cards": "📈 Individual Waveform Cards (Aligned by HDD No.)",
         "tab_table": "📑 Full Detail Data Table",
         "hdr_max": "Max",
         "hdr_ng": "NG",
+        "hdr_warn": "Ctrl",
         "hdr_base": "Ref:",
         "lot_ref_auto": "Auto ({auto_lbl})",
         "lot_ref_self": "Self Extrapolation",
@@ -366,6 +390,7 @@ I18N = {
         "app_title": "📊 แดชบอร์ดวิเคราะห์และตัดสินค่า Stiction อัตโนมัติ (ODCS)",
         "lang_label": "🌐 ภาษา (Language)",
         "btn_refresh": "🔄 อัปเดตข้อมูล (สแกนไดรฟ์ใหม่)",
+        "model_select_label": "📦 เลือกรุ่นสินค้า (Part No.)",
         "sidebar_filter_header": "🔍 ตัวกรองข้อมูล (Filters)",
         "f_lot": "① β+Lot / เงื่อนไข (เริ่มต้น 3 ล่าสุด, สูงสุด 5)",
         "f_trial": "② ครั้งที่ทดสอบ (-1, -2, -3...)",
@@ -378,7 +403,7 @@ I18N = {
         "more_selected": "{first} และอีก {rest} รายการ",
         "search_placeholder": "🔍 ค้นหา...",
         "sidebar_display_header": "🎨 ตั้งค่าการแสดงผลและสเกลกราฟ",
-        "only_ng": "แสดงเฉพาะแถวที่มีผล NG",
+        "only_ng": "แสดงเฉพาะแถวที่เป็น NG / เกินเกณฑ์ควบคุม",
         "show_base": "แสดงเส้นอ้างอิงพื้นฐาน (เส้นจุด) ในทุกกราฟ",
         "auto_scale": "ปรับสเกลสูงสุดให้เท่ากันอัตโนมัติ",
         "y_scale_cap": "ค่าสูงสุดแกน Y [mN·m] (สไลเดอร์ / พิมพ์ตัวเลข)",
@@ -388,7 +413,7 @@ I18N = {
         "src_gdrive": "☁️ โหลดอัตโนมัติจาก Google Drive (แชร์ลิงก์)",
         "src_folder": "📁 โหลดจากโฟลเดอร์ในเครื่อง",
         "src_upload": "📤 อัปโหลดไฟล์ / ZIP",
-        "gdrive_folder_id": "Google Drive Folder ID / URL",
+        "gdrive_folder_id": "Google Drive Root Folder ID / URL",
         "gdrive_err": "เกิดข้อผิดพลาดในการโหลด Google Drive (โปรดตรวจสอบว่าตั้งค่าแชร์เป็น 'ทุกคนที่มีลิงก์' แล้ว): {err}",
         "folder_path": "ที่อยู่โฟลเดอร์เป้าหมาย",
         "folder_not_found": "ไม่พบโฟลเดอร์ที่ระบุ",
@@ -399,10 +424,14 @@ I18N = {
         "base_self": "คำนวณจากกราฟตัวเอง (ไม่มีเส้นอ้างอิง)",
         "custom_ref_sel": "เลือก Lot อ้างอิง (Pre-HT)",
         "pre_ht_eval_sel": "คำนวณค่าพีคของ Pre-HT ด้วยสำหรับเงื่อนไข",
-        "info_no_data": "กรุณานำไฟล์ผลการวัด (.xls / .xlsx / .zip) ใส่ในโฟลเดอร์ Google Drive (แชร์ให้ทุกคนที่มีลิงก์) หรืออัปโหลดไฟล์ทางแถบซ้าย",
+        "info_no_data": "กรุณานำไฟล์ผลการวัด (.xls / .xlsx / .zip) ใส่ในโฟลเดอร์รุ่นสินค้าภายใต้ 'Stiction Peak Test' บน Google Drive หรืออัปโหลดทางแถบซ้าย",
         "metric_total": "จำนวนทั้งหมด",
         "metric_ok": "OK (≦ 2.0 mN·m)",
-        "metric_ng": "NG (> 2.0 mN·m / ผิดปกติ)",
+        "metric_warn": "เกินเกณฑ์ควบคุม (2.0–32.8)",
+        "metric_ng": "NG (> 32.8 / ผิดปกติ)",
+        "judge_disp_ok": "OK",
+        "judge_disp_warn": "เกินเกณฑ์ควบคุม",
+        "judge_disp_ng": "NG",
         "unit_items": "{n} รายการ",
         "btn_csv": "📥 ดาวน์โหลดตารางผลลัพธ์ (CSV)",
         "sec_summary": "📋 ตารางสรุปผลการตัดสิน",
@@ -419,12 +448,15 @@ I18N = {
         "ov_tr": "ครั้งที่ทดสอบ",
         "ov_judge": "กรองตามผลตัดสิน",
         "judge_all": "ทั้งหมด",
-        "judge_ok": "เฉพาะ OK",
-        "judge_ng": "เฉพาะ NG",
+        "judge_ok": "OK",
+        "judge_warn": "เกินเกณฑ์",
+        "judge_ng": "NG",
+        "judge_ng_warn": "NG+เกินเกณฑ์",
         "tab_cards": "📈 รายการกราฟแยกแต่ละตัว (เรียงตาม HDD No.)",
         "tab_table": "📑 ตารางข้อมูลรายละเอียดทั้งหมด",
         "hdr_max": "สูงสุด",
         "hdr_ng": "NG",
+        "hdr_warn": "เกินเกณฑ์",
         "hdr_base": "อ้างอิง:",
         "lot_ref_auto": "อัตโนมัติ ({auto_lbl})",
         "lot_ref_self": "คำนวณจากกราฟตัวเอง",
@@ -450,10 +482,37 @@ def tr_txt(key: str, **kwargs) -> str:
     return text.format(**kwargs) if kwargs else text
 
 
+def format_judge_label(judge_code: str) -> str:
+    if judge_code == "OK":
+        return tr_txt("judge_disp_ok")
+    if judge_code == "OUT_OF_CONTROL":
+        return tr_txt("judge_disp_warn")
+    if judge_code == "NG_UL":
+        return f"{tr_txt('judge_disp_ng')} (UL)"
+    if judge_code == "NG":
+        return tr_txt("judge_disp_ng")
+    return judge_code
+
+
 # ==========================================
-# 1. ファイル名パーサー（未処理/Without の Pre-HT・HT 分離 & 測定日抽出）
+# 1. ファイル名パーサー & 品番パス解決ヘルパー
 # ==========================================
-def parse_filename(filename: str):
+def resolve_model_from_rel_path(rel_path: str) -> str:
+    """
+    Stiction Peak Test 配下の相対パスから直下フォルダ名（品番）を抽出する。
+    """
+    norm = rel_path.replace("\\", "/").strip("/")
+    parts = [p for p in norm.split("/") if p]
+    if ROOT_SUBFOLDER_NAME in parts:
+        idx = parts.index(ROOT_SUBFOLDER_NAME)
+        if idx + 1 < len(parts) - 1:
+            return parts[idx + 1]
+    if len(parts) >= 2:
+        return parts[0]
+    return "未分類"
+
+
+def parse_filename(filename: str, model_name: str = "未分類"):
     base = os.path.basename(filename)
     name_no_ext = os.path.splitext(base)[0]
 
@@ -497,6 +556,7 @@ def parse_filename(filename: str):
     priority = 0 if "熱処理跡" in name_no_ext else 1
 
     return {
+        "model_name": model_name,
         "file_name": base,
         "lot_name": lot_name,
         "base_lot": base_lot,
@@ -541,8 +601,9 @@ def load_torque_from_xls(source):
     return trq_arr.astype(np.float32)
 
 
-def _read_single_file_task(file_path: str):
-    meta = parse_filename(file_path)
+def _read_single_file_task(args):
+    file_path, model_name = args
+    meta = parse_filename(file_path, model_name=model_name)
     meta["torque"] = load_torque_from_xls(file_path)
     meta["mtime"] = os.path.getmtime(file_path)
     return file_path, meta
@@ -559,19 +620,28 @@ def extract_gdrive_folder_id(raw_input: str) -> str:
     return s
 
 
+def register_item_by_model(models_data: dict, meta: dict):
+    model = meta.get("model_name", "未分類")
+    if model not in models_data:
+        models_data[model] = {}
+    parsed_data = models_data[model]
+    key = (meta["base_lot"], meta["HDD_No"], meta["heat_stage"], int(meta["trial"]))
+    if key not in parsed_data or parsed_data[key]["priority"] < meta["priority"]:
+        parsed_data[key] = meta
+
+
 @st.cache_data(show_spinner="Downloading data from Google Drive...")
 def load_raw_dataset_from_gdrive_public(folder_id_or_url: str, refresh_token: int):
     """
-    サービスアカウント不要：
-    「リンクを知っている全員（閲覧者）」に設定されたGoogleドライブフォルダから
-    gdown を使って全ファイルを一括取得・解析する
+    Stiction Peak Analyzer (root) -> Stiction Peak Test -> [品番フォルダ一覧]
+    配下の全ファイル・サブフォルダ・ZIPを品番ごとに自動分類して読み込む
     """
     if not HAS_GDOWN:
-        return {}, "gdown library is not installed."
+        return {}, [], "gdown library is not installed."
 
     folder_id = extract_gdrive_folder_id(folder_id_or_url)
     if not folder_id:
-        return {}, "Folder ID is empty."
+        return {}, [], "Folder ID is empty."
 
     base_tmp_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".gdrive_sync_tmp", folder_id)
     if os.path.exists(base_tmp_dir):
@@ -588,8 +658,27 @@ def load_raw_dataset_from_gdrive_public(folder_id_or_url: str, refresh_token: in
             remaining_ok=True,
         )
 
-        parsed_data = {}
-        for root, _, files in os.walk(base_tmp_dir):
+        # Stiction Peak Test フォルダを探す（無ければ base_tmp_dir 直下を対象にする）
+        scan_root = base_tmp_dir
+        for root, dirs, _ in os.walk(base_tmp_dir):
+            if ROOT_SUBFOLDER_NAME in dirs:
+                scan_root = os.path.join(root, ROOT_SUBFOLDER_NAME)
+                break
+
+        discovered_models = sorted([
+            d for d in os.listdir(scan_root)
+            if os.path.isdir(os.path.join(scan_root, d)) and not d.startswith(".")
+        ])
+
+        models_data = {m: {} for m in discovered_models}
+
+        for root, _, files in os.walk(scan_root):
+            rel_dir = os.path.relpath(root, scan_root)
+            if rel_dir == ".":
+                model_name = "未分類"
+            else:
+                model_name = rel_dir.replace("\\", "/").split("/")[0]
+
             for fname in sorted(files):
                 if fname.startswith("~$"):
                     continue
@@ -600,23 +689,31 @@ def load_raw_dataset_from_gdrive_public(folder_id_or_url: str, refresh_token: in
                     with zipfile.ZipFile(fpath, "r") as z:
                         for member in z.namelist():
                             if member.lower().endswith((".xls", ".xlsx")) and not os.path.basename(member).startswith("~$"):
-                                meta = parse_filename(member)
+                                eff_model = model_name
+                                if eff_model == "未分類" and "/" in member.strip("/"):
+                                    eff_model = member.strip("/").split("/")[0]
+                                meta = parse_filename(member, model_name=eff_model)
                                 meta["torque"] = load_torque_from_xls(z.read(member))
                                 meta["mtime"] = mtime_ts
-                                register_item(parsed_data, meta)
+                                register_item_by_model(models_data, meta)
                 elif fname.lower().endswith((".xls", ".xlsx")):
-                    meta = parse_filename(fname)
+                    meta = parse_filename(fname, model_name=model_name)
                     meta["torque"] = load_torque_from_xls(fpath)
                     meta["mtime"] = mtime_ts
-                    register_item(parsed_data, meta)
+                    register_item_by_model(models_data, meta)
 
-        return parsed_data, None
+        all_models = sorted(models_data.keys())
+        return models_data, all_models, None
     except Exception as e:
-        return {}, str(e)
+        return {}, [], str(e)
 
 
 # ==========================================
 # 3. 2区間フィッティング（前半急勾配＋後半定常域）粘着判定アルゴリズム
+#    判定基準:
+#      - NG: > 32.8 mN・m (または初回UL異常)
+#      - 工程管理外 (OUT_OF_CONTROL): > 2.0 mN・m かつ <= 32.8 mN・m
+#      - OK: <= 2.0 mN・m
 # ==========================================
 def analyze_stiction(
     torque: np.ndarray,
@@ -624,7 +721,8 @@ def analyze_stiction(
     ref_torque: np.ndarray = None,
     noise_thresh: float = 0.30,
     drop_thresh: float = 0.50,
-    spec_limit: float = 2.0,
+    control_limit: float = CONTROL_LIMIT,
+    spec_limit: float = SPEC_LIMIT,
 ):
     n = len(torque)
     if n < 50:
@@ -636,7 +734,7 @@ def analyze_stiction(
     start_s = 300
     end_s = min(1500, n - 150)
     if end_s <= start_s + 20:
-        return {"stiction_peak": 0.0, "peak_idx": None, "judge": "NG (UL異常)" if ul_error else "OK"}
+        return {"stiction_peak": 0.0, "peak_idx": None, "judge": "NG_UL" if ul_error else "OK"}
 
     s_indices = np.arange(start_s, end_s + 1)
     rough_peak_idx = start_s + int(np.argmax(torque_smooth[start_s : end_s + 1]))
@@ -721,7 +819,15 @@ def analyze_stiction(
                     valid_peak_val, valid_peak_idx = dt_val, int(idx)
                     break
 
-    judge = "NG (UL異常)" if ul_error else ("NG" if valid_peak_val > spec_limit else "OK")
+    if ul_error:
+        judge = "NG_UL"
+    elif valid_peak_val > spec_limit:
+        judge = "NG"
+    elif valid_peak_val > control_limit:
+        judge = "OUT_OF_CONTROL"
+    else:
+        judge = "OK"
+
     return {
         "stiction_peak": round(valid_peak_val, 3),
         "peak_idx": valid_peak_idx,
@@ -731,19 +837,20 @@ def analyze_stiction(
 
 
 # ==========================================
-# 4. キャッシュ読み込み＆一括解析エンジン
+# 4. ローカル / アップロード読込＆一括解析エンジン
 # ==========================================
-def register_item(parsed_data: dict, meta: dict):
-    key = (meta["base_lot"], meta["HDD_No"], meta["heat_stage"], int(meta["trial"]))
-    if key not in parsed_data or parsed_data[key]["priority"] < meta["priority"]:
-        parsed_data[key] = meta
-
-
 @st.cache_data(show_spinner="Loading local folder data...")
 def load_raw_dataset_from_folder(folder_path: str, refresh_token: int):
+    scan_root = os.path.join(folder_path, ROOT_SUBFOLDER_NAME) if os.path.isdir(os.path.join(folder_path, ROOT_SUBFOLDER_NAME)) else folder_path
+
+    discovered_models = sorted([
+        d for d in os.listdir(scan_root)
+        if os.path.isdir(os.path.join(scan_root, d)) and not d.startswith(".")
+    ])
+
     file_paths = sorted([
         p for pat in ("*.xls", "*.xlsx")
-        for p in glob.glob(os.path.join(folder_path, "**", pat), recursive=True)
+        for p in glob.glob(os.path.join(scan_root, "**", pat), recursive=True)
         if not os.path.basename(p).startswith("~$")
     ])
 
@@ -757,7 +864,13 @@ def load_raw_dataset_from_folder(folder_path: str, refresh_token: int):
             file_cache = {}
 
     current_set = set(file_paths)
-    to_read = [p for p in file_paths if p not in file_cache or file_cache[p].get("mtime") != os.path.getmtime(p)]
+    to_read = []
+    for p in file_paths:
+        rel_dir = os.path.relpath(os.path.dirname(p), scan_root)
+        m_name = "未分類" if rel_dir == "." else rel_dir.replace("\\", "/").split("/")[0]
+        if p not in file_cache or file_cache[p].get("mtime") != os.path.getmtime(p) or file_cache[p].get("model_name") != m_name:
+            to_read.append((p, m_name))
+
     for dk in [k for k in file_cache if k not in current_set]:
         del file_cache[dk]
 
@@ -771,29 +884,61 @@ def load_raw_dataset_from_folder(folder_path: str, refresh_token: int):
         except Exception:
             pass
 
-    parsed_data = {}
+    models_data = {m: {} for m in discovered_models}
     for p in file_paths:
         if p in file_cache:
-            register_item(parsed_data, file_cache[p].copy())
-    return parsed_data
+            register_item_by_model(models_data, file_cache[p].copy())
+
+    return models_data, sorted(models_data.keys())
 
 
 @st.cache_data(show_spinner="Reading uploaded files...")
 def load_raw_dataset_from_uploads(file_tuples):
-    parsed_data = {}
+    models_data = {}
     for fname, fbytes in file_tuples:
         if fname.lower().endswith(".zip"):
             with zipfile.ZipFile(io.BytesIO(fbytes), "r") as z:
                 for member in z.namelist():
                     if member.lower().endswith((".xls", ".xlsx")) and not os.path.basename(member).startswith("~$"):
-                        meta = parse_filename(member)
+                        m_name = resolve_model_from_rel_path(member)
+                        meta = parse_filename(member, model_name=m_name)
                         meta["torque"] = load_torque_from_xls(z.read(member))
-                        register_item(parsed_data, meta)
+                        register_item_by_model(models_data, meta)
         else:
-            meta = parse_filename(fname)
+            m_name = resolve_model_from_rel_path(fname)
+            meta = parse_filename(fname, model_name=m_name)
             meta["torque"] = load_torque_from_xls(fbytes)
-            register_item(parsed_data, meta)
-    return parsed_data
+            register_item_by_model(models_data, meta)
+    return models_data, sorted(models_data.keys())
+
+
+def select_default_model(models_data: dict, available_models: list) -> str:
+    """
+    測定日(yymmdd)が最新の品番を初期選択。同率の場合は M040-000013-P2BKKI を優先する。
+    """
+    if not available_models:
+        return ""
+    if len(available_models) == 1:
+        return available_models[0]
+
+    best_model = available_models[0]
+    best_score = ("000000", 0)
+
+    for m in available_models:
+        pdata = models_data.get(m, {})
+        valid_dates = [
+            str(item.get("test_date", ""))
+            for item in pdata.values()
+            if str(item.get("test_date", "")).isdigit() and len(str(item.get("test_date", ""))) == 6
+        ]
+        max_date = max(valid_dates) if valid_dates else "000000"
+        prio_flag = 1 if m == PRIORITY_MODEL_NAME else 0
+        score = (max_date, prio_flag)
+        if score > best_score:
+            best_score = score
+            best_model = m
+
+    return best_model
 
 
 def run_batch_analysis(
@@ -856,13 +1001,15 @@ def run_batch_analysis(
         res = analyze_stiction(item["torque"], item["ul_error"], ref_trq)
         item["analysis"] = res
         results.append({
+            "品番": item.get("model_name", "-"),
             "β+Lot / 条件": disp_lot,
             "base_lot": base_lot,
             "HDD No.": hdd,
             "熱処理": stage,
             "回数": int(trial),
             "粘着ピーク [mN・m]": res["stiction_peak"],
-            "判定": res["judge"],
+            "judge_code": res["judge"],
+            "判定": format_judge_label(res["judge"]),
             "基準ベースライン": ref_source_label,
             "測定日": item["test_date"],
             "mtime": float(item.get("mtime", 0.0)),
@@ -1686,11 +1833,17 @@ def build_lot_summary_table(df_view: pd.DataFrame, lot: str, selected_trials: li
                 stg = f"{r['熱処理']}: " if show_stage_lbl else ""
                 trial_vals[tr].append(f"{stg}{pk_val:.2f}")
 
-        if (sub["判定"] != "OK").any():
-            ul_note = " (UL)" if any("UL異常" in j for j in sub["判定"]) else ""
-            judge_str = f"🔴 NG{ul_note}"
+        j_codes = set(sub["judge_code"].values)
+        if any(c in ("NG", "NG_UL") for c in j_codes):
+            ul_note = " (UL)" if "NG_UL" in j_codes else ""
+            judge_str = f"🔴 {tr_txt('judge_disp_ng')}{ul_note}"
+            judge_rank = 2
+        elif "OUT_OF_CONTROL" in j_codes:
+            judge_str = f"🟡 {tr_txt('judge_disp_warn')}"
+            judge_rank = 1
         else:
-            judge_str = "🟢 OK"
+            judge_str = f"🟢 {tr_txt('judge_disp_ok')}"
+            judge_rank = 0
 
         row_dict = {
             "No.": f"N={i}",
@@ -1700,6 +1853,7 @@ def build_lot_summary_table(df_view: pd.DataFrame, lot: str, selected_trials: li
             col_lbl = tr_txt("tbl_trial_col", t=t)
             row_dict[col_lbl] = " / ".join(trial_vals[t]) if trial_vals[t] else "-"
         row_dict[judge_col_name] = judge_str
+        row_dict["_rank"] = judge_rank
         rows.append(row_dict)
 
     return pd.DataFrame(rows)
@@ -1708,17 +1862,20 @@ def build_lot_summary_table(df_view: pd.DataFrame, lot: str, selected_trials: li
 def render_scrollable_summary_table(df_sum: pd.DataFrame):
     if df_sum.empty:
         return
-    cols = list(df_sum.columns)
+    cols = [c for c in df_sum.columns if c != "_rank"]
     judge_col_name = tr_txt("tbl_judge")
     thead = "".join(f"<th>{html.escape(str(c))}</th>" for c in cols)
     tbody_rows = []
     for _, row in df_sum.iterrows():
+        rank = int(row.get("_rank", 0))
         tds = []
         for c in cols:
             val_str = html.escape(str(row[c]))
-            if c == judge_col_name and "NG" in val_str:
+            if c == judge_col_name and rank == 2:
                 tds.append(f'<td style="color:#dc2626;font-weight:700;">{val_str}</td>')
-            elif c == judge_col_name and "OK" in val_str:
+            elif c == judge_col_name and rank == 1:
+                tds.append(f'<td style="color:#d97706;font-weight:700;">{val_str}</td>')
+            elif c == judge_col_name and rank == 0:
                 tds.append(f'<td style="color:#16a34a;font-weight:700;">{val_str}</td>')
             else:
                 tds.append(f"<td>{val_str}</td>")
@@ -1853,8 +2010,7 @@ def checkbox_dropdown_filter(
 # ==========================================
 # 7. Streamlit メインUI（初期化 & サイドバー）
 # ==========================================
-default_local_dir = r"C:\Users\OGAWA\Desktop\Stickness Peak Test\St.Moritz ODCS"
-# ローカルフォルダが存在しない（クラウド環境）場合は Googleドライブ自動読込を初期選択
+default_local_dir = r"C:\Users\OGAWA\Desktop\Stickness Peak Test"
 default_src_idx = 0 if not os.path.isdir(default_local_dir) else 1
 
 if "ui_lang" not in st.session_state:
@@ -1876,23 +2032,59 @@ if "pre_ht_eval_lots" not in st.session_state:
 if "lot_ref_overrides" not in st.session_state:
     st.session_state.lot_ref_overrides = {}
 
-raw_parsed_data = {}
+models_data = {}
+available_models = []
 gdrive_err_msg = None
 
 if st.session_state.input_mode_idx == 0:
-    raw_parsed_data, gdrive_err_msg = load_raw_dataset_from_gdrive_public(
+    models_data, available_models, gdrive_err_msg = load_raw_dataset_from_gdrive_public(
         st.session_state.gdrive_folder_input,
         st.session_state.refresh_token,
     )
 elif st.session_state.input_mode_idx == 1:
     if os.path.isdir(st.session_state.target_dir):
-        raw_parsed_data = load_raw_dataset_from_folder(st.session_state.target_dir, st.session_state.refresh_token)
+        models_data, available_models = load_raw_dataset_from_folder(
+            st.session_state.target_dir,
+            st.session_state.refresh_token,
+        )
 else:
     if "uploaded_tuples" in st.session_state and st.session_state.uploaded_tuples:
-        raw_parsed_data = load_raw_dataset_from_uploads(st.session_state.uploaded_tuples)
+        models_data, available_models = load_raw_dataset_from_uploads(st.session_state.uploaded_tuples)
+
+# 品番リストの変更検知＆初期選択（最新測定日優先 / 同率時は M040-000013-P2BKKI 優先）
+models_sig = tuple(available_models)
+if st.session_state.get("models_sig") != models_sig:
+    st.session_state.models_sig = models_sig
+    st.session_state.selected_model = select_default_model(models_data, available_models)
+
+with st.sidebar:
+    if st.button(tr_txt("btn_refresh"), use_container_width=True, type="primary"):
+        st.session_state.refresh_token += 1
+        st.rerun()
+
+    # 更新ボタンのすぐ下に「品番選択（単一選択・拡張自動対応）」を配置
+    if available_models:
+        cur_model = st.session_state.get("selected_model", available_models[0])
+        if cur_model not in available_models:
+            cur_model = select_default_model(models_data, available_models)
+            st.session_state.selected_model = cur_model
+
+        chosen_model = st.selectbox(
+            tr_txt("model_select_label"),
+            options=available_models,
+            index=available_models.index(cur_model),
+            key="model_selector_box",
+        )
+        if chosen_model != cur_model:
+            st.session_state.selected_model = chosen_model
+            st.session_state.lot_ref_overrides = {}
+            st.rerun()
+    else:
+        chosen_model = ""
+
+raw_parsed_data = models_data.get(chosen_model, {}) if chosen_model else {}
 
 all_base_lots = sorted({k[0] for k in raw_parsed_data.keys()}) if raw_parsed_data else []
-pre_ht_base_lots = sorted({k[0] for k in raw_parsed_data.keys() if k[2] == "Pre-HT"}) if raw_parsed_data else []
 valid_pre_eval = [l for l in st.session_state.pre_ht_eval_lots if l in all_base_lots]
 
 b_mode = ["auto", "custom", "self"][st.session_state.baseline_mode_idx]
@@ -1905,10 +2097,6 @@ parsed_data, df_res = run_batch_analysis(
 )
 
 with st.sidebar:
-    if st.button(tr_txt("btn_refresh"), use_container_width=True, type="primary"):
-        st.session_state.refresh_token += 1
-        st.rerun()
-
     st.divider()
 
     st.header(tr_txt("sidebar_filter_header"))
@@ -1919,25 +2107,26 @@ with st.sidebar:
         all_dates = sorted(df_res["測定日"].unique(), reverse=True)
         all_hdds = sorted(df_res["HDD No."].unique())
 
+        filter_ns = f"m_{chosen_model}"
         selected_lots = checkbox_dropdown_filter(
             tr_txt("f_lot"),
             options=all_lots,
             default_selected=recent_3_lots if recent_3_lots else [all_lots[0]],
-            key_prefix="main_lot",
+            key_prefix=f"{filter_ns}_main_lot",
             max_selections=5,
         )
         selected_trials = checkbox_dropdown_filter(
             tr_txt("f_trial"),
             options=all_trials,
             default_selected=all_trials,
-            key_prefix="main_trial",
+            key_prefix=f"{filter_ns}_main_trial",
             format_func=lambda x: tr_txt("trial_fmt", x=x),
         )
         selected_dates = checkbox_dropdown_filter(
             tr_txt("f_date"),
             options=all_dates,
             default_selected=all_dates,
-            key_prefix="main_date",
+            key_prefix=f"{filter_ns}_main_date",
             format_func=format_yymmdd,
         )
         avail_main_hdds = sorted(df_res[df_res["β+Lot / 条件"].isin(selected_lots)]["HDD No."].unique()) if selected_lots else all_hdds
@@ -1945,7 +2134,7 @@ with st.sidebar:
             tr_txt("f_hdd"),
             options=avail_main_hdds,
             default_selected=avail_main_hdds,
-            key_prefix="main_hdd",
+            key_prefix=f"{filter_ns}_main_hdd",
         )
     else:
         selected_lots, selected_trials, selected_dates, selected_hdds = [], [], [], []
@@ -2089,7 +2278,8 @@ with st.sidebar:
 # ==========================================
 title_col, lang_col = st.columns([0.82, 0.18])
 with title_col:
-    st.title(tr_txt("app_title"))
+    model_badge_str = f" — `{chosen_model}`" if chosen_model else ""
+    st.title(f"{tr_txt('app_title')}{model_badge_str}")
 with lang_col:
     st.selectbox(
         tr_txt("lang_label"),
@@ -2100,6 +2290,8 @@ with lang_col:
 if df_res.empty:
     st.info(tr_txt("info_no_data"))
 else:
+    pre_ht_base_lots = sorted({k[0] for k in raw_parsed_data.keys() if k[2] == "Pre-HT"})
+
     df_view = df_res[
         df_res["β+Lot / 条件"].isin(selected_lots)
         & df_res["回数"].isin(selected_trials)
@@ -2107,15 +2299,23 @@ else:
         & df_res["HDD No."].isin(selected_hdds)
     ]
 
-    m1, m2, m3, m4 = st.columns([1, 1, 1, 1.5])
-    m1.metric(tr_txt("metric_total"), tr_txt("unit_items", n=len(df_view)))
-    m2.metric(tr_txt("metric_ok"), tr_txt("unit_items", n=int((df_view["判定"] == "OK").sum())))
-    m3.metric(tr_txt("metric_ng"), tr_txt("unit_items", n=int((df_view["判定"] != "OK").sum())))
-    export_df = df_view.drop(columns=["base_lot", "mtime"], errors="ignore")
-    m4.download_button(
+    cnt_total = len(df_view)
+    cnt_ok = int((df_view["judge_code"] == "OK").sum())
+    cnt_warn = int((df_view["judge_code"] == "OUT_OF_CONTROL").sum())
+    cnt_ng = int(df_view["judge_code"].isin(["NG", "NG_UL"]).sum())
+
+    m1, m2, m3, m4, m5 = st.columns([0.9, 1.0, 1.15, 1.05, 1.4])
+    m1.metric(tr_txt("metric_total"), tr_txt("unit_items", n=cnt_total))
+    m2.metric(tr_txt("metric_ok"), tr_txt("unit_items", n=cnt_ok))
+    m3.metric(tr_txt("metric_warn"), tr_txt("unit_items", n=cnt_warn))
+    m4.metric(tr_txt("metric_ng"), tr_txt("unit_items", n=cnt_ng))
+
+    export_df = df_view.drop(columns=["base_lot", "mtime", "judge_code"], errors="ignore")
+    csv_fname = f"ODCS_Stiction_{chosen_model}.csv" if chosen_model else "ODCS_Stiction_Judgement.csv"
+    m5.download_button(
         tr_txt("btn_csv"),
         data=export_df.to_csv(index=False).encode("utf-8-sig"),
-        file_name="ODCS_Stiction_Judgement.csv",
+        file_name=csv_fname,
         mime="text/csv",
         use_container_width=True,
     )
@@ -2168,21 +2368,21 @@ else:
                 tr_txt("ov_lot"),
                 options=list(selected_lots),
                 default_selected=list(selected_lots),
-                key_prefix="ov_lot",
+                key_prefix=f"m_{chosen_model}_ov_lot",
             )
             avail_ov_hdds = sorted(df_view[df_view["β+Lot / 条件"].isin(ov_lots)]["HDD No."].unique())
             ov_hdds = checkbox_dropdown_filter(
                 tr_txt("ov_hdd"),
                 options=avail_ov_hdds,
                 default_selected=avail_ov_hdds,
-                key_prefix="ov_hdd",
+                key_prefix=f"m_{chosen_model}_ov_hdd",
             )
             ref_mode_labels = [tr_txt("ov_ref_fit"), tr_txt("ov_ref_raw"), tr_txt("ov_ref_none")]
             ov_ref_choice = st.radio(
                 tr_txt("ov_ref_mode"),
                 options=ref_mode_labels,
                 index=0,
-                key="ov_filter_ref_mode",
+                key=f"m_{chosen_model}_ov_filter_ref_mode",
             )
             ov_ref_mode = ["fit", "raw", "none"][ref_mode_labels.index(ov_ref_choice)]
 
@@ -2190,16 +2390,21 @@ else:
                 tr_txt("ov_tr"),
                 options=[int(x) for x in selected_trials],
                 default_selected=[int(x) for x in selected_trials],
-                key_prefix="ov_tr",
+                key_prefix=f"m_{chosen_model}_ov_tr",
                 format_func=lambda x: tr_txt("trial_fmt", x=x),
             )
-            judge_opts = [tr_txt("judge_all"), tr_txt("judge_ok"), tr_txt("judge_ng")]
-            ov_judge = st.radio(
+            judge_opts = [
+                tr_txt("judge_all"),
+                tr_txt("judge_ok"),
+                tr_txt("judge_warn"),
+                tr_txt("judge_ng"),
+                tr_txt("judge_ng_warn"),
+            ]
+            ov_judge = st.selectbox(
                 tr_txt("ov_judge"),
                 options=judge_opts,
-                index=2 if only_ng_rows else 0,
-                horizontal=True,
-                key="ov_filter_judge",
+                index=4 if only_ng_rows else 0,
+                key=f"m_{chosen_model}_ov_filter_judge",
             )
 
         df_ov = df_view[
@@ -2207,9 +2412,13 @@ else:
             & df_view["HDD No."].isin(ov_hdds)
         ]
         if ov_judge == tr_txt("judge_ok"):
-            df_ov = df_ov[df_ov["判定"] == "OK"]
-        elif ov_judge == tr_txt("judge_ng") or only_ng_rows:
-            df_ov = df_ov[df_ov["判定"] != "OK"]
+            df_ov = df_ov[df_ov["judge_code"] == "OK"]
+        elif ov_judge == tr_txt("judge_warn"):
+            df_ov = df_ov[df_ov["judge_code"] == "OUT_OF_CONTROL"]
+        elif ov_judge == tr_txt("judge_ng"):
+            df_ov = df_ov[df_ov["judge_code"].isin(["NG", "NG_UL"])]
+        elif ov_judge == tr_txt("judge_ng_warn") or only_ng_rows:
+            df_ov = df_ov[df_ov["judge_code"] != "OK"]
 
         with ov_col_chart.container(border=True):
             fig_overlay, overlay_displayed_cards = build_combined_overlay_chart(
@@ -2235,7 +2444,8 @@ else:
             header_cols = st.columns(len(selected_lots))
             for idx_lot, lot in enumerate(selected_lots):
                 lot_df = df_view[df_view["β+Lot / 条件"] == lot]
-                ng_cnt = int((lot_df["判定"] != "OK").sum())
+                ng_cnt = int(lot_df["judge_code"].isin(["NG", "NG_UL"]).sum())
+                warn_cnt = int((lot_df["judge_code"] == "OUT_OF_CONTROL").sum())
                 max_pk = lot_df["粘着ピーク [mN・m]"].max() if not lot_df.empty else 0.0
                 ref_used = lot_df["基準ベースライン"].iloc[0] if not lot_df.empty else "-"
                 lot_hdd_cnt = lot_df["HDD No."].nunique()
@@ -2247,7 +2457,7 @@ else:
                     <div class="{marker_cls}odcs-lot-header-top" title="{lot_esc}">
                       <div class="odcs-lot-header-title">🏷️ {lot_esc}</div>
                       <div class="odcs-lot-header-sub">
-                        N={lot_hdd_cnt} ｜ {tr_txt('hdr_max')}: <b>{max_pk:.2f} mNm</b> ｜ {tr_txt('hdr_ng')}: <b>{ng_cnt}</b>
+                        N={lot_hdd_cnt} ｜ {tr_txt('hdr_max')}: <b>{max_pk:.2f}</b> ｜ {tr_txt('hdr_warn')}: <b>{warn_cnt}</b> ｜ {tr_txt('hdr_ng')}: <b>{ng_cnt}</b>
                       </div>
                     </div>
                     """
@@ -2272,7 +2482,7 @@ else:
                         options=lot_ref_codes,
                         index=lot_ref_codes.index(cur_ov_code),
                         format_func=_fmt_lot_ref,
-                        key=f"lot_hdr_ref_sel_{lot}",
+                        key=f"m_{chosen_model}_lot_hdr_ref_sel_{lot}",
                         label_visibility="collapsed",
                     )
                     if chosen_code != cur_ov_code:
@@ -2285,7 +2495,7 @@ else:
             inject_sticky_lot_header_script()
 
             for row_idx, hdd in enumerate(master_hdds):
-                if only_ng_rows and not (df_view[df_view["HDD No."] == hdd]["判定"] != "OK").any():
+                if only_ng_rows and not (df_view[df_view["HDD No."] == hdd]["judge_code"] != "OK").any():
                     continue
 
                 row_cols = st.columns(len(selected_lots))
@@ -2335,7 +2545,7 @@ else:
                                 "Ref select",
                                 options=ref_options,
                                 index=0,
-                                key=f"ref_sel_{lot}_{hdd}_{row_idx}",
+                                key=f"m_{chosen_model}_ref_sel_{lot}_{hdd}_{row_idx}",
                                 label_visibility="collapsed",
                             )
                             override_key = key_map.get(selected_ref_label)
@@ -2357,18 +2567,14 @@ else:
                         show_stg_lbl = (has_pre_eval and has_ht_eval)
 
                         val_parts = []
-                        any_ng = False
-                        any_ul = False
+                        j_codes_card = set()
                         for _, r in hdd_df.iterrows():
                             stg = r["熱処理"]
                             tr = int(r["回数"])
                             recalc_an = recalc_map.get((stg, tr))
                             pk_val = recalc_an["stiction_peak"] if recalc_an else r["粘着ピーク [mN・m]"]
-                            jdg = recalc_an["judge"] if recalc_an else r["判定"]
-                            if jdg != "OK":
-                                any_ng = True
-                            if "UL異常" in jdg:
-                                any_ul = True
+                            j_code = recalc_an["judge"] if recalc_an else r["judge_code"]
+                            j_codes_card.add(j_code)
 
                             stg_prefix = f"{stg}" if show_stg_lbl else ""
                             tr_prefix = f"-{tr}" if (len(selected_trials) > 1 or tr != 1) else ""
@@ -2376,11 +2582,13 @@ else:
                             val_parts.append(f"{stg_prefix}{tr_prefix}: {pk_val:.2f}" if label else f"{pk_val:.2f}")
                         val_str = " / ".join(val_parts) + " mNm"
 
-                        if any_ng:
-                            ul_note = " (UL)" if any_ul else ""
-                            badge_html = f'<span class="odcs-badge-ng">🔴 NG{ul_note}</span>'
+                        if any(c in ("NG", "NG_UL") for c in j_codes_card):
+                            ul_note = " (UL)" if "NG_UL" in j_codes_card else ""
+                            badge_html = f'<span class="odcs-badge-ng">🔴 {html.escape(tr_txt("judge_disp_ng"))}{ul_note}</span>'
+                        elif "OUT_OF_CONTROL" in j_codes_card:
+                            badge_html = f'<span class="odcs-badge-warn">🟡 {html.escape(tr_txt("judge_disp_warn"))}</span>'
                         else:
-                            badge_html = '<span class="odcs-badge-ok">🟢 OK</span>'
+                            badge_html = f'<span class="odcs-badge-ok">🟢 {html.escape(tr_txt("judge_disp_ok"))}</span>'
 
                         ov_badge_html = f'<span class="odcs-badge-ov">{html.escape(tr_txt("badge_in_ov"))}</span>' if (lot, hdd) in overlay_displayed_cards else ""
 
@@ -2391,7 +2599,7 @@ else:
                         </div>
                         """
                         c_title.markdown(title_html, unsafe_allow_html=True)
-                        st.plotly_chart(fig, use_container_width=True, key=f"chart_{lot}_{hdd}_{row_idx}")
+                        st.plotly_chart(fig, use_container_width=True, key=f"m_{chosen_model}_chart_{lot}_{hdd}_{row_idx}")
 
         with tab_detail:
             st.dataframe(export_df, use_container_width=True, height=500)
